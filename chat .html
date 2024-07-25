@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Node JS Chat</title>
+    <style>
+      body {
+        background-color: black;
+        color: greenyellow;
+        font-family: "Consolas";
+      }
+      header {
+        text-align: center;
+      }
+      main {
+        margin-left: 1em;
+      }
+      #messages {
+        list-style: none;
+      }
+      #form {
+        display: flex;
+      }
+      input,
+      label {
+        display: block;
+      }
+      input {
+        border: none;
+        outline: none;
+        background-color: black;
+        color: greenyellow;
+        padding: 1em 0.5em;
+        font-size: 1.5em;
+        font-family: "Consolas";
+        flex: 1;
+      }
+      label {
+        padding: 1em 0.5em;
+        font-size: 1.5em;
+        display: block;
+      }
+      .right {
+        text-align: right;
+        margin-right: 20px;
+      }
+      .left {
+        text-align: left;
+        margin-left: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Node JS Chat</h1>
+      <span id="status">OFFLINE</span>
+    </header>
+    <main>
+      <ul id="messages"></ul>
+      <form id="form">
+        <label for="input">&gt;</label>
+        <input type="text" id="input" required autofocus autocomplete="off" />
+      </form>
+    </main>
+
+    <script>
+      const status = document.getElementById("status");
+      const messages = document.getElementById("messages");
+      const form = document.getElementById("form");
+      const input = document.getElementById("input");
+
+      const nickname = prompt("Enter your nickname:");
+      const ws = new WebSocket("ws://localhost:3000");
+
+      function setStatus(value) {
+        status.textContent = value;
+      }
+
+      function addNewMessage(value, side) {
+        const li = document.createElement("li");
+        li.className = side;
+        li.innerHTML = value;
+        messages.appendChild(li);
+      }
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        ws.send(JSON.stringify({ nickname, message: input.value }));
+        addNewMessage(`You: ${input.value}`, "right");
+        input.value = "";
+      });
+
+      ws.onopen = () => setStatus("ONLINE");
+      ws.onclose = () => setStatus("OFFLINE");
+      ws.onmessage = (response) => {
+        const data = JSON.parse(response.data);
+        if (data.id) {
+     
+        } else {
+          addNewMessage(`${data.nickname}: ${data.message}`, "left");
+        }
+      };
+    </script>
+  </body>
+</html>
